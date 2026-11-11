@@ -1,0 +1,11 @@
+# Generado por build.php (se sube a cada hosting, no se versiona)
+dist/
+
+# Credenciales FTP (extensión SFTP de VS Code)
+.vscode/sftp.json
+
+# PDF muy pesado (68 MB): vive solo local y en el server del .com.ar
+sitios/ar/assets/docs/
+
+Thumbs.db
+.DS_Store

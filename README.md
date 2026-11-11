@@ -33,7 +33,11 @@ Si un archivo existe en `sitios/xx/` y también en `core/`, gana el del sitio.
    con el usuario FTP de cada dominio. Ese archivo tiene contraseñas: **no se sube a git**.
 5. Guardar los cambios en git (commit + push).
 
-El build conserva las fechas de los archivos, así el Sync sube solo lo que cambió.
+El build conserva las fechas de los archivos **redondeadas al minuto** (al día si tienen más de 5 meses),
+así el Sync sube solo lo que cambió. El redondeo es necesario porque el servidor FTP lista las fechas
+sin segundos: sin él, la extensión ve todo distinto y sube el sitio entero. Por eso:
+- No copiar archivos a mano en `dist/`: siempre pasar por el build.
+- En `sftp.json` cada perfil lleva `"syncOption": { "update": false }` (compara fecha y tamaño).
 
 ## Qué cambia entre sitios (sitio.php)
 
@@ -44,6 +48,8 @@ El build conserva las fechas de los archivos, así el Sync sube solo lo que camb
 - **motor**: `true` = buscador conectado al motor de reservas; `false` = "Reservar" y el buscador van a WhatsApp.
 - **agencias**, **destinos**: qué banners de agencias y qué destinos muestra.
 - **textos**: textos que cambian solo en ese sitio (pisan a los de `core/lang/`).
+- **gtm**: ID de Google Tag Manager (hoy solo el .com.ar: `GTM-PNN2SRG5`). Se inserta justo después
+  de `<head>` y solo en producción (no en localhost). Para sumarlo a otro sitio, agregar `'gtm'` a su sitio.php.
 
 ## Notas
 

@@ -10,11 +10,12 @@
  * + el .htaccess generado. dist/{sitio}/ es exactamente lo que se sube a su hosting.
  * dist/ no se edita a mano: se borra y se vuelve a generar en cada build.
  *
- * Las fechas de los archivos se conservan, así la extensión SFTP sube solo lo que cambió
- * y los ?v= de CSS/JS (cache) no cambian si el archivo no cambió.
+ * Las fechas de los archivos se conservan (redondeadas, ver marca()), así la extensión SFTP sube
+ * solo lo que cambió y los ?v= de CSS/JS (cache) no cambian si el archivo no cambió.
  */
 
 if (PHP_SAPI !== 'cli') exit("Solo por línea de comandos.\n");
+date_default_timezone_set('America/Argentina/Buenos_Aires');   // hora de la PC (y la que lista el servidor FTP)
 
 $RAIZ   = __DIR__;
 $SITIOS = ['ar', 'com', 'br', 'cl'];
@@ -70,10 +71,10 @@ foreach ($pedidos as $codigo) {
   $copiados = 0;
   foreach ($archivos as $rel => $src) {
     $dst = "$dist/$rel";
-    if (is_file($dst) && filesize($dst) === filesize($src) && filemtime($dst) === filemtime($src)) continue;
+    if (is_file($dst) && filesize($dst) === filesize($src) && filemtime($dst) === marca($src)) continue;
     if (!is_dir(dirname($dst))) mkdir(dirname($dst), 0777, true);
     if (!@copy($src, $dst)) { echo "  ! No se pudo copiar $rel (¿abierto en otro programa?)\n"; continue; }
-    touch($dst, filemtime($src));
+    touch($dst, marca($src));
     $copiados++;
   }
   $borrados = limpiar($dist, $dist, $archivos + ['.htaccess' => true]);
@@ -84,6 +85,7 @@ foreach ($pedidos as $codigo) {
     file_put_contents("$dist/.htaccess", $ht);
     $copiados++;
   }
+  touch("$dist/.htaccess", marca("$dist/.htaccess"));   // fecha redondeada como el resto (ver marca())
 
   printf("  %-4s -> dist/%-4s  %4d archivos · %d actualizados · %d borrados  (%.1fs)\n",
     $codigo, $codigo . '/', count($archivos) + 1, $copiados, $borrados, microtime(true) - $t0);
@@ -158,6 +160,18 @@ function htaccess($raiz, $cfg, $viejos, $sufijos, $ar_url)
     '{{DIRECTO}}'       => implode("\n", $directo),
     '{{PAGINAS}}'       => implode("\n", $reglas),
   ]);
+}
+
+/**
+ * Fecha que se le pone al archivo en dist/: la del original redondeada al minuto (o al día si tiene
+ * más de 5 meses). Por FTP la extensión SFTP lee la fecha remota con el listado del servidor, que
+ * no trae segundos (y en archivos viejos, tampoco la hora): sin redondear, todo le parece distinto
+ * y sube el sitio entero en cada Sync.
+ */
+function marca($src)
+{
+  $t = filemtime($src);
+  return $t < time() - 150 * 86400 ? mktime(0, 0, 0, date("n", $t), date("j", $t), date("Y", $t)) : $t - $t % 60;
 }
 
 /** Archivos de una carpeta (recursivo): ['ruta/relativa' => 'ruta/completa']. */

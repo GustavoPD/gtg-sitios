@@ -13,6 +13,14 @@ $page_url         = rtrim(SITE_URL, '/') . url($page_slug);
 <!doctype html>
 <html lang="<?= e(LANG) ?>">
 <head>
+<?php if (sitio('gtm') && BASE === '/'): // Google Tag Manager (sitio.php > 'gtm'); no se carga en local/staging ?>
+  <script async src="https://www.googletagmanager.com/gtm.js?id=<?= e(sitio('gtm')) ?>"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  </script>
+<?php endif; ?>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= e($page_title) ?></title>

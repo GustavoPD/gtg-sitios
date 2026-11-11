@@ -14,6 +14,7 @@ return [
   'email'    => 'centralreservas@grupotierragaucha.com.ar',
 
   'motor'    => true,                        // buscador conectado al motor de reservas
+  'gtm'      => 'GTM-PNN2SRG5',              // Google Tag Manager (solo en producción). Los demás sitios no lo tienen.
 
   // Páginas internas de este sitio: slug de la URL => archivo. Las que no estén acá no se publican
   // y sus links llevan al .com.ar (ver url() en config.php).
